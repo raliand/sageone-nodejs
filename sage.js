@@ -5,12 +5,12 @@ var request = require('request');
 Sage.BASE_URL = "https://api.sageone.com/accounts/v1/";
 
 /* Constructor */
-function Sage(clientId, clientSecret, signingSecret, redirectUri, auth) {
+function Sage(clientId, clientSecret, signingSecret, redirectUri, oauth) {
   this.clientId = clientId;
   this.clientSecret = clientSecret;
   this.signingSecret = signingSecret;
   this.redirectUri = redirectUri;
-  this.auth = auth;
+  this.oauth = oauth;
 //   this.oauth = {
 //     requestCode: null,
 //     authorized: false,
