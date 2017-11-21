@@ -5,19 +5,13 @@ var request = require('request');
 Sage.BASE_URL = "https://api.sageone.com/accounts/v1/";
 
 /* Constructor */
-function Sage(clientId, clientSecret, signingSecret, redirectUri, oauth) {
+function Sage(clientId, clientSecret, signingSecret, redirectUri, subscriptionKey, oauth) {
   this.clientId = clientId;
   this.clientSecret = clientSecret;
   this.signingSecret = signingSecret;
   this.redirectUri = redirectUri;
+  this.subscriptionKey = subscriptionKey;
   this.oauth = oauth;
-//   this.oauth = {
-//     requestCode: null,
-//     authorized: false,
-//     expires: null,
-//     token: {},
-//     refreshToken: null
-//   };
 }
 
 /* Helper Functions */
@@ -34,7 +28,7 @@ function SageOAuthSignature(httpMethod, url, parameters, nonce, signingSecret, a
 };
 
 module.makeRequest = function (context, httpMethod, url, parameters, callback) {
-  console.log('context:', context);
+  // console.log('context:', context);
   var isTokenRequest = (url === "https://api.sageone.com/oauth2/token");
 
   if (!isTokenRequest) {
@@ -55,8 +49,10 @@ module.makeRequest = function (context, httpMethod, url, parameters, callback) {
         'X-Signature': OAuthSignature,
         'X-Nonce': nonce,
         'Accept': '*/*',
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'User-Agent': 'freshbooks'
+        'Content-Type': 'application/json',
+        'User-Agent': 'sage_nodejs',
+        'X-Site' : context.oauth.token.resource_owner_id,
+        'ocp-apim-subscription-key' : context.subscriptionKey
       },
     form: parameters
   };
@@ -66,14 +62,14 @@ module.makeRequest = function (context, httpMethod, url, parameters, callback) {
     if (response.statusCode == 200 || response.statusCode == 201) {
       callback(null, JSON.parse(body));
     } else {
-      console.log('response code:', response.statusCode);
-      console.log(error);
-      if (!error) error = { message: 'Error Occured', statusCode: response.statusCode }
+      // console.log('response code:', response.statusCode);
+      // console.log(body);
+      if (!error) error = { message: 'Error Occured', statusCode: response.statusCode }      
       callback(error, JSON.parse(body))
     }
-    console.log(response.request.uri)
-    console.log(response.request.headers);
-    console.log(response.request.body);
+    // console.log(response.request.uri)
+    // console.log(response.request.headers);
+    // console.log(response.request.body);
   });
 }
 
@@ -93,6 +89,11 @@ Sage.prototype.query = function (httpMethod, url, parameters, callback) {
   });
 
 };
+
+Sage.prototype.setBaseUrl = function (url) {
+  Sage.BASE_URL = url;
+}
+
 Sage.prototype.setAuthCode = function (code) {
   this.oauth.requestCode = code;
 }
