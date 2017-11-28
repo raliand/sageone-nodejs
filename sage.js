@@ -1,6 +1,7 @@
 var oauthSignature = require('oauth-signature');
 var crypto = require('crypto');
 var request = require('request');
+var utf8 = require('utf8');
 
 Sage.BASE_URL = "https://api.sageone.com/accounts/v1/";
 
@@ -38,6 +39,12 @@ module.makeRequest = function (context, httpMethod, url, parameters, callback) {
     var OAuthSignature = SageOAuthSignature(httpMethod, url, parameters, nonce, signingSecret, accessToken, { encodeSignature: false });
   }
 
+  var body = '';
+  if(httpMethod == 'POST' || httpMethod == 'PUT') {
+    body = utf8.encode(parameters.body)
+    delete parameters.body
+  }
+
   var options = {
     method: httpMethod,
     url: url,
@@ -54,7 +61,8 @@ module.makeRequest = function (context, httpMethod, url, parameters, callback) {
         'X-Site' : context.oauth.token.resource_owner_id,
         'ocp-apim-subscription-key' : context.subscriptionKey
       },
-    form: parameters
+    form: parameters,
+    body: body
   };
 
   // Making HTTP Request
